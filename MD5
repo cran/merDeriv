@@ -1,0 +1,10 @@
+7bb8beaaaa68cccd443032b4b4b8771b *DESCRIPTION
+331bca9bee28505bbd67691c0405d71d *NAMESPACE
+57269d90047747a6b458eb4d4aac53f7 *R/bread.lmerMod.R
+bd7484da297ac853db90a77506353e9d *R/estfun.lmerMod.R
+4ee994a4aecd550327aa378b8d2aefae *R/llcont.lmerMod.R
+f5309d11c76cbf22aa4df534b04a9c11 *R/vcov.lmerMod.R
+4e3a1a86c4a349f8ac86e20a4a65c9c9 *man/bread.lmerMod.Rd
+5af3e531f3e2948800b0bc2761436f3d *man/estfun.lmerMod.Rd
+f73b6930db79dfffea72087146c9bf23 *man/llcont.lmerMod.Rd
+401f08c76e21e9fe655ecd07d248fe3f *man/vcov.lmerMod.Rd
