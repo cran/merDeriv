@@ -7,15 +7,21 @@
   mixed effects model of class \code{\linkS4class{lmerMod}}.  
 }
 \usage{
-  \method{vcov}{lmerMod}(object, full = TRUE, \dots)
+\method{vcov}{lmerMod}(object, full = TRUE, information = "expected", \dots)
 }
 \arguments{
   \item{object}{An object of class \code{\linkS4class{lmerMod}}.}
-  \item{full}{If \code{full = TRUE} (default), the variance-covariance matrix 
+  \item{full}{If \code{full = TRUE} (default), returns the variance-covariance matrix 
     for all fitted parameters (including fixed effect parameters, 
-    random effect (co)variances, and residual variance.  
-    If \code{full = FALSE}, the variance-covariance matrix of only fixed effect 
-    parameters is returned.} 
+    random effect (co)variances, and residual variance).  
+    If \code{full = FALSE}, returns the variance-covariance matrix of only fixed effect 
+    parameters.}
+  \item{information}{If \code{information = "expected"} (default),
+    the variance-covariance matrix 
+    is based on the inversion of Fisher information matrix.   
+    If \code{information = "observed"}, the variance-covariance matrix
+    is based on the observed Fisher information, which is the negative
+    of Hessian matrix.}
   \item{\dots}{additional arguments.}
 }
 \value{
@@ -28,11 +34,11 @@
   \url{https://arxiv.org/abs/1612.04911}
 }
 \examples{
-  \dontrun{
+\dontrun{
     # The sleepstudy example
     lme4fit <- lmer(Reaction ~ Days + (Days|Subject), sleepstudy, REML = FALSE)
 
     # variance covariance matrix for all parameters
     vcov(lme4fit)
-  }
+}
 }
