@@ -18,9 +18,9 @@ vcov.lmerMod <- function(object, full = TRUE, information = "expected", ...) {
   Pmid <- solve(crossprod(parts$X, t(invVX)))
   P <- invV - tcrossprod(crossprod(invVX, Pmid), t(invVX))
     
-  ## block 1 fixhes 
+  ## block 1 fixhes
+  fixvar <- solve(tcrossprod(crossprod(parts$X, invV), t(parts$X)))
   if (full == FALSE) {
-    fixvar <- solve(tcrossprod(crossprod(parts$X, invV), t(parts$X)))
     fixvar  
   } else {
     fixhes <- tcrossprod(crossprod(parts$X, invV), t(parts$X))
@@ -108,6 +108,13 @@ vcov.lmerMod <- function(object, full = TRUE, information = "expected", ...) {
     colnames(full_varcov) <- c(names(parts$fixef), paste("cov",
       names(parts$theta), sep="_"), "residual")
 
-    return(full_varcov)
+    callingFun <- try(deparse(sys.call(-2)), silent = TRUE)
+    if(length(callingFun) > 1) callingFun <- paste(callingFun, collapse="")
+    if(!inherits(callingFun, "try-error") & grepl("summary.merMod", callingFun)){
+      return(fixvar)
+    } else {
+      return(full_varcov)
+    }
   }
 }
+

@@ -1,6 +1,6 @@
 Package: merDeriv
 Title: Case-Wise and Cluster-Wise Derivatives for Mixed Effects Models
-Version: 0.1-2
+Version: 0.1-3
 Authors@R: c(person(given = "Ting", family = "Wang",
                     role = c("aut", "cre"),
                     email = "twb8d@mail.missouri.edu"),
@@ -15,8 +15,9 @@ License: GPL (>= 2)
 LazyData: yes
 URL: http://semtools.r-forge.r-project.org
 NeedsCompilation: no
-Author: Ting Wang [aut, cre], Edgar Merkle [aut]
+Author: Ting Wang [aut, cre],
+  Edgar Merkle [aut]
 Maintainer: Ting Wang <twb8d@mail.missouri.edu>
-Packaged: 2017-08-01 14:44:05 UTC; twang
+Packaged: 2018-02-13 23:30:28 UTC; ting
 Repository: CRAN
-Date/Publication: 2017-08-01 15:14:58 UTC
+Date/Publication: 2018-02-14 00:00:07 UTC
