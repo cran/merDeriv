@@ -7,15 +7,16 @@
   mixed effects model of class \code{\linkS4class{lmerMod}}.  
 }
 \usage{
-\method{vcov}{lmerMod}(object, full = TRUE, information = "expected", \dots)
+\method{vcov}{lmerMod}(object, full = FALSE, information = "expected", \dots)
 }
 \arguments{
   \item{object}{An object of class \code{\linkS4class{lmerMod}}.}
-  \item{full}{If \code{full = TRUE} (default), returns the variance-covariance matrix 
+  \item{full}{ If \code{full = FALSE} (default), returns the 
+    variance-covariance matrix of only fixed effect 
+    parameters. If \code{full = TRUE} , returns the variance-covariance matrix 
     for all fitted parameters (including fixed effect parameters, 
     random effect (co)variances, and residual variance).  
-    If \code{full = FALSE}, returns the variance-covariance matrix of only fixed effect 
-    parameters.}
+   }
   \item{information}{If \code{information = "expected"} (default),
     the variance-covariance matrix 
     is based on the inversion of Fisher information matrix.   

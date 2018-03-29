@@ -1,4 +1,4 @@
-vcov.lmerMod <- function(object, full = TRUE, information = "expected", ...) {
+vcov.lmerMod <- function(object, full = FALSE, information = "expected", ...) {
   if (!is(object, "lmerMod")) stop("estfun.lmerMod() only works for lmer() models.")
   
   ## preparation for short cuts:
