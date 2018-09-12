@@ -7,13 +7,16 @@
   ML estimates.
 }
 \usage{
-\method{llcont}{lmerMod}(object, \dots)
+\method{llcont}{lmerMod}(x, \dots)
 }
 \arguments{
-  \item{object}{An object of class \code{\linkS4class{lmerMod}}.}
-  \item{\dots}{additional arguments.}
+  \item{x}{An object of class \code{\linkS4class{lmerMod}}.}
+  \item{\dots}{additional arguments, including \code{level}
+    (\code{level = 2} is default; see details).}
 }
-\value{A vector of length \emph{n}, containing log-likelihoods for the \emph{n} observations. }
+\value{If \code{level = 2}, a vector of log-likelihoods whose length is
+  the number of clusters. If \code{level = 1}, a vector of length \emph{n}, 
+  containing log-likelihoods for all \emph{n} observations.}
 \references{
   Wang, T. & Merkle, E. C. (2016). Derivative Computations and Robust Standard
   Errors for Linear Mixed Effects Models in lme4. 
@@ -28,7 +31,7 @@
     # The sleepstudy example
     lme4fit <- lmer(Reaction ~ Days + (Days|Subject), sleepstudy, REML = FALSE)
 
-    # casewise log likelihood
+    # clusterwise log likelihood
     llcont(lme4fit)
 }  
 }
