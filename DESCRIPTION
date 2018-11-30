@@ -1,6 +1,6 @@
 Package: merDeriv
 Title: Case-Wise and Cluster-Wise Derivatives for Mixed Effects Models
-Version: 0.1-5
+Version: 0.1-6
 Authors@R: c(person(given = "Ting", family = "Wang",
                     role = c("aut", "cre"),
                     email = "twb8d@mail.missouri.edu"),
@@ -21,6 +21,6 @@ NeedsCompilation: no
 Author: Ting Wang [aut, cre],
   Edgar Merkle [aut]
 Maintainer: Ting Wang <twb8d@mail.missouri.edu>
-Packaged: 2018-09-12 01:50:33 UTC; ting
+Packaged: 2018-11-30 02:52:03 UTC; ting
 Repository: CRAN
-Date/Publication: 2018-09-12 21:20:03 UTC
+Date/Publication: 2018-11-30 07:20:02 UTC

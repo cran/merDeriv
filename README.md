@@ -5,4 +5,4 @@ merDeriv is a free, open source R package for computing derivatives of mixed mod
 
 For further information, see:
 
-Wang, T., & Merkle, E. C. (in press). [Derivative computations and robust standard errors for linear mixed effects models in lme4](https://arxiv.org/abs/1612.04911). Journal of Statistical Software.
+Wang, T. & Merkle, E. C. (2018). [Derivative Computations and Robust Standard Errors for Linear Mixed Effects Models in lme4.](10.18637/jss.v087.c01). Journal of Statistical Software, 16(9), 1–16.
