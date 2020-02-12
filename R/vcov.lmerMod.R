@@ -15,7 +15,13 @@ vcov.lmerMod <- function(object, ...) {
   }
   if(!(full %in% c("TRUE", "FALSE"))) stop("invalid 'full' argument supplied")
   if(!(information %in% c("expected", "observed"))) stop("invalid 'information' argument supplied")
-  
+
+  if("ranpar" %in% names(dotdotdot)){
+    ranpar <- dotdotdot$ranpar
+  } else {
+    ranpar <- "var"
+  }  
+
   ## preparation for short cuts:
   ## get all elements by getME and exclude multiple random effect models.
   parts <- getME(object, "ALL")
@@ -69,13 +75,13 @@ vcov.lmerMod <- function(object, ...) {
                 devV[[x[1]]]), invV), t(devV[[x[2]]])))))
       }
       if(information == "observed") {
-        ranhes[lower.tri(ranhes, diag = TRUE)] <- apply(entries, 1, 
-          function(x) -as.numeric((1/2) *
+        ranhes[lower.tri(ranhes, diag = TRUE)] <- unlist(apply(entries, 1, 
+          function(x) as.vector(-as.numeric((1/2) *
           lav_matrix_trace(tcrossprod(tcrossprod(crossprod(invV,
           devV[[x[1]]]), invV), t(devV[[x[2]]])))) +
           tcrossprod((tcrossprod((crossprod(yXbe,
           tcrossprod(tcrossprod(crossprod(invV,
-          devV[[x[1]]]), invV), t(devV[[x[2]]])))), invV)), t(yXbe)))
+          devV[[x[1]]]), invV), t(devV[[x[2]]])))), invV)), t(yXbe)))))
       }      
     }
     ## REML estimates
@@ -109,11 +115,29 @@ vcov.lmerMod <- function(object, ...) {
       }
     }
     ## Organize full_varcov
+    ## reprameterize sd and var
+    if (ranpar == "var") {
+        ranhes <- ranhes
+        varcov_beta <- varcov_beta
+    } else if (ranpar == "sd") {
+        ## varcov_beta reparameterization
+        sdcormat <- as.data.frame(VarCorr(object,comp = "Std.Dev"), order = "lower.tri")
+        sdcormat$sdcor2[which(is.na(sdcormat$var2))] <- sdcormat$sdcor[which(is.na(sdcormat$var2))]*2
+        sdcormat$sdcor2[which(!is.na(sdcormat$var2))] <- sdcormat$vcov[which(!is.na(sdcormat$var2))]/
+          sdcormat$sdcor[which(!is.na(sdcormat$var2))]
+        varcov_beta <- sweep(varcov_beta, MARGIN = 1, sdcormat$sdcor2, `*`)
+        ## ranhes reparameterization
+        weight <- apply(entries, 1, function(x) sdcormat$sdcor2[x[1]] * sdcormat$sdcor2[x[2]])
+        ranhes[lower.tri(ranhes, diag = TRUE)] <- weight * ranhes[lower.tri(ranhes, diag = TRUE)]
+        ranhes <- forceSymmetric(ranhes, uplo = "L")
+      } else {
+        stop("ranpar needs to be var or sd for lmerMod object.")
+    }
     full_varcov <- solve(rbind(cbind(fixhes, t(varcov_beta)),
                                cbind(varcov_beta, ranhes)))
     
     colnames(full_varcov) <- c(names(parts$fixef), paste("cov",
-                             names(parts$theta), sep="_"), "residual")
+                             names(parts$theta), sep = "_"), "residual")
     
     callingFun <- try(deparse(sys.call(-2)), silent = TRUE)
     if(length(callingFun) > 1) callingFun <- paste(callingFun, collapse="")

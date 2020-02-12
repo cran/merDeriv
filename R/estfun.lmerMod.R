@@ -22,6 +22,12 @@ estfun.lmerMod <- function(x, ...) {
       level <- 2L
     }
   }
+  
+  if("ranpar" %in% names(dotdotdot)){
+    ranpar <- dotdotdot$ranpar
+  } else {
+    ranpar <- "var"
+  }  
 
   ## checks
   if(!(level %in% c(1L, 2L))) stop("invalid 'level' argument supplied")
@@ -70,16 +76,30 @@ estfun.lmerMod <- function(x, ...) {
   }
 
   ## REML estimates
-   if (x@devcomp$dims[10] == 2|x@devcomp$dims[10] == 1) {
+  if (x@devcomp$dims[10] == 2|x@devcomp$dims[10] == 1) {
     for (j in 1:length(devV)) {
       score_varcov[,j] <- as.vector(-(1/2) * diag(crossprod(P, devV[[j]])) +
       t((1/2) * tcrossprod(tcrossprod(yXbesoV, t(devV[[j]])), invV)) *
       (yXbe))
     }
   }
+
+  ## re-parameterization for sd/cor
+  if (ranpar == "var"){
+    score_varcov <- score_varcov 
+  } else if (ranpar == "sd"){
+      sdcormat <- as.data.frame(VarCorr(x,comp = "Std.Dev"), order = "lower.tri")
+      sdcormat$sdcor2[which(is.na(sdcormat$var2))] <- sdcormat$sdcor[which(is.na(sdcormat$var2))]*2
+      sdcormat$sdcor2[which(!is.na(sdcormat$var2))] <- sdcormat$vcov[which(!is.na(sdcormat$var2))]/
+        sdcormat$sdcor[which(!is.na(sdcormat$var2))]
+      score_varcov <- sweep(score_varcov, MARGIN = 2, sdcormat$sdcor2, `*`)
+    } else {
+        stop("ranpar needs to be var or sd for lmerMod object.")
+  }
+  
   
   ## Organize score matrix
-  score <- cbind(as.matrix(score_beta), score_varcov)
+  score <- cbind(as.matrix(score_beta), as.matrix(score_varcov))
   colnames(score) <- c(names(parts$fixef),
                        paste("cov", names(parts$theta), sep="_"), "residual")
 
