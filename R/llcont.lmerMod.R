@@ -12,6 +12,10 @@ llcont.lmerMod <- function(x, ...) {
   }
   if(!(level %in% c(1L, 2L))) stop("invalid 'level' argument supplied")
   
+  ## error for variance equal to 0 or non-positive definite
+  cor <- attr(lme4::VarCorr(x)[[1]], "correlation")
+  ndim <- nrow(cor)
+  
   ## get all elements by getME and exclude multiple random effect models.
   parts <- getME(x, "ALL")
   

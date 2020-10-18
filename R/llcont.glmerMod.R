@@ -7,22 +7,21 @@ llcont.glmerMod <- function(x, ...){
   ## check multiple groups.
   if (length(getME(x, "l_i")) > 1L) stop("Multiple cluster variables detected. This type of model is currently not supported.")
   if (!is.null(x@call$weights)) stop ("Models with weights specification is currently not supported.")
-  if (length(grep("cbind", x@call$formula))!=0) stop ("Models with cbind specification is currently not supported.")    
+  if (length(grep("cbind", x@call$formula))!=0) stop ("Models with cbind specification are currently not supported.")    
 
   ## extract nAGQ used in model fit, unless overridden by ...
   ddd <- list(...)
   if ("nAGQ" %in% names(ddd)){
-    ngq <- ddd$nAGQ
+    ngq <- max(ddd$nAGQ, 1L)
   } else {
-    ngq <- x@devcomp$dims[7]
+    ngq <- 1L
   }
     
   ## 1a. obtain random effect predictions + sds from predict()
   ##    these become etamns and etasds below, removing
   ##    need for "adaptive" quadrature.
   ## (etamns are random effect means, etasds are random
-  ## effect sds)
-    
+  ##  effect sds)    
   fe.pred <- predict(x, re.form = NA)
   re.modes <- ranef(x, condVar = TRUE)
   re.vars <- vector("list", length(re.modes))
@@ -55,6 +54,17 @@ llcont.glmerMod <- function(x, ...){
   ## 3. Quadrature
   N <- nobs(x)
   ndim <- sapply(VarCov, nrow)
+  npd <- 0L
+  if (ndim == 1){
+    if(VarCov[[1]] < .001) VarCov[[1]] <- matrix(.001) # for setting quadrature points, we need something > 0
+  }
+  if (ndim > 1){
+    if(any(eigen(VarCov[[1]], only.values=TRUE)$values <= 0L)){
+      npd <- 1L
+      VarCov[[1]] <- nearPD(VarCov[[1]])$mat
+    }
+  }
+
   ## FIXME this has length > 1 for crossed
   J <- getME(x, "l_i")
   lik <- numeric(J)
@@ -62,12 +72,9 @@ llcont.glmerMod <- function(x, ...){
   ## quadrature points:
   lav_integration_gauss_hermite <- getFromNamespace("lav_integration_gauss_hermite", "lavaan")
   if(ndim == 1){
-    XW <- lav_integration_gauss_hermite(n    = ngq,
-                                                 ndim = ndim)
+    XW <- lav_integration_gauss_hermite(n = ngq, ndim = ndim)
   } else {
-    XW <- lav_integration_gauss_hermite(n    = ngq,
-                                                 ndim = ndim,
-                                                 dnorm = TRUE)
+    XW <- lav_integration_gauss_hermite(n = ngq, ndim = ndim, dnorm = TRUE)
   }
 
   ## Z matrix
@@ -78,7 +85,7 @@ llcont.glmerMod <- function(x, ...){
 
   for(j in 1:J){
     if(ndim == 1){
-      etasds <- sqrt(as.numeric(re.vars[[1]][,,j]))
+      etasds <- sqrt(max(as.numeric(re.vars[[1]][,,j]), .001))
       etamns <- re.modes[[1]][j,]
     
       w.star <- sqrt(2) * etasds * dnorm(etasds * (sqrt(2)*XW$x) + etamns,
@@ -94,7 +101,9 @@ llcont.glmerMod <- function(x, ...){
     } else {
       ## from integration3_cfa.R (multivariate version)
       ## FIXME: if >1 grouping var, length(re.vars) > 1
-      C <- t(chol(re.vars[[1]][,,j]))
+      C <- re.vars[[1]][,,j]
+      if(npd) C <- nearPD(C)$mat
+      C <- t(chol(C))
       etamns <- re.modes[[1]][j,]
 
       x.star <- t(as.matrix(C %*% t(XW$x) + as.numeric(etamns)))
@@ -109,7 +118,7 @@ llcont.glmerMod <- function(x, ...){
                   fe.pred = fe.pred[grps==grpnm[j]],
                   Zi = as.matrix(Z[grps==grpnm[j],]),
                   re.modes = re.modes[[1]],
-                  grp = as.numeric(grpnm[j]),
+                  grp = which(grpnm == grpnm[j]),
                   fam = fam) * w.star )
     }
   }

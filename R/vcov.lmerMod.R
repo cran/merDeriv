@@ -1,6 +1,6 @@
 vcov.lmerMod <- function(object, ...) {
   
-  if (!is(object, "lmerMod")) stop("estfun.lmerMod() only works for lmer() models.")
+  if (!is(object, "lmerMod")) stop("vcov.lmerMod() only works for lmer() models.")
   
   dotdotdot <- list(...)
   if("full" %in% names(dotdotdot)){
@@ -67,7 +67,7 @@ vcov.lmerMod <- function(object, ...) {
       (uluti + 1), 2, byrow = TRUE), t(combn((uluti + 1), 2)))
     entries <- entries[order(entries[,1], entries[,2]), ]
     ## ML estimates
-    if (object@devcomp$dims[10] == 0) {
+    if (parts$devcomp$dims[['REML']] == 0) {
       if(information == "expected") {
         ranhes[lower.tri(ranhes, diag = TRUE)] <- 
           apply(entries, 1, function(x) as.numeric((1/2) *
@@ -85,8 +85,9 @@ vcov.lmerMod <- function(object, ...) {
       }      
     }
     ## REML estimates
-    if (object@devcomp$dims[10] == 2|object@devcomp$dims[10] == 1) {
+    if (parts$devcomp$dims[['REML']] > 0) {
       if(information == "expected") {
+        ## this is excessively slow and could be improved:
         ranhes[lower.tri(ranhes, diag = TRUE)] <- apply(entries, 1, 
           function(x) as.numeric((1/2) * lav_matrix_trace(tcrossprod(
           tcrossprod(crossprod(P, devV[[x[1]]]), P), t(devV[[x[2]]])))))
@@ -100,7 +101,6 @@ vcov.lmerMod <- function(object, ...) {
           devV[[x[1]]]), P), t(devV[[x[2]]])))), invV)), t(yXbe)))             
       }      
     }
-    
     ranhes <- forceSymmetric(ranhes, uplo = "L")
     
     ## block 2 and block 3: second derivative of sigma and beta.
@@ -135,9 +135,10 @@ vcov.lmerMod <- function(object, ...) {
         ranhes[lower.tri(ranhes, diag = TRUE)] <- weight *
           ranhes[lower.tri(ranhes, diag = TRUE)]
         ranhes <- forceSymmetric(ranhes, uplo = "L")
-      } else {
+    } else {
         stop("ranpar needs to be var or sd for lmerMod object.")
     }
+
     full_varcov <- solve(rbind(cbind(fixhes, t(varcov_beta)),
                                cbind(varcov_beta, ranhes)))
     

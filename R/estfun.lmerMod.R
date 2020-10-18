@@ -6,7 +6,10 @@ estfun.lmerMod <- function(x, ...) {
   ## warning for high correlations. 
   cor <- attr(lme4::VarCorr(x)[[1]], "correlation")
   if(any(abs(cor[lower.tri(cor)]) > .9)) warning("Correlations > |.9| detected. Scores of random (co)variances may be unstable.")
-
+  
+  ## error for variance equal to 0 or non-positive definite
+  ndim <- nrow(cor)
+  
   ## get all elements by getME and exclude multiple random effect models.
   parts <- getME(x, "ALL")
   
@@ -67,7 +70,7 @@ estfun.lmerMod <- function(x, ...) {
   score_varcov <- matrix(NA, nrow = nrow(parts$X), ncol = (uluti + 1))
   
   ## ML estimates. 
-  if (x@devcomp$dims[10] == 0) {
+  if (parts$devcomp$dims[['REML']] == 0) {
     for (j in 1:length(devV)) {
       score_varcov[,j] <- as.vector(-(1/2) * diag(crossprod(invV, devV[[j]])) +
       t((1/2) * tcrossprod(tcrossprod(yXbesoV, t(devV[[j]])), invV)) *
@@ -76,7 +79,7 @@ estfun.lmerMod <- function(x, ...) {
   }
 
   ## REML estimates
-  if (x@devcomp$dims[10] == 2|x@devcomp$dims[10] == 1) {
+  if (parts$devcomp$dims[['REML']] > 0) {
     for (j in 1:length(devV)) {
       score_varcov[,j] <- as.vector(-(1/2) * diag(crossprod(P, devV[[j]])) +
       t((1/2) * tcrossprod(tcrossprod(yXbesoV, t(devV[[j]])), invV)) *
