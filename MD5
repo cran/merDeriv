@@ -1,4 +1,4 @@
-120438a5720904e9953d326290b31b0f *DESCRIPTION
+28f59873163b71b2056cdbe277dabb3f *DESCRIPTION
 2d8aee80287cc0589bec420e2d5a7b14 *NAMESPACE
 35f0e6fa5bd0c2893308b2eeeb5db8ae *R/bread.glmerMod.R
 878b2fcbc874cc21c833a20b12508f70 *R/bread.lmerMod.R
@@ -6,12 +6,12 @@ b4a0de285403799a51dc06200b1c0477 *R/estfun.glmerMod.R
 62b7ea377957b82d4666034052628886 *R/estfun.lmerMod.R
 90cbb9b797aa4139425f0559a2fa4e16 *R/llcont.glmerMod.R
 11a9a24d0b9fbdea75937311591579dd *R/llcont.lmerMod.R
-84efc53ea2d2152b6c0fe2f8e71c502c *R/vcov.glmerMod.R
+ab5a9bc9f89a4b4d2a54ca11437674bc *R/vcov.glmerMod.R
 e4768a6d5eee8b664368b7d7eeaf654d *R/vcov.lmerMod.R
 03647df36a9100bc31cb089a5654e412 *README.md
-609ae6755a3dd587954599ec855007db *build/partial.rdb
+fa631648acbdb0858a1d00f115d50e84 *build/partial.rdb
 e7110d07aa056dbe2a18bafb5c4a8d46 *inst/CITATION
-c1379b590a37288042c6a77ef26f1dd1 *inst/tinytest/test_merDeriv.R
+87394d6616401fe964f31a300accc854 *inst/tinytest/test_merDeriv.R
 9afe22b3aa380fcc73a264bb9728fc16 *man/bread.glmerMod.Rd
 9e13995f0d8754717a0d4677ac492471 *man/bread.lmerMod.Rd
 cae633f0f9da4d8360d7cf012779d906 *man/estfun.glmerMod.Rd
