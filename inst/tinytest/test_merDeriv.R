@@ -1,4 +1,3 @@
-
 library("lme4")
 library("lavaan")
 library("mirt")
@@ -18,6 +17,17 @@ score2 <- estfun(lme4fit, ranpar = "var", level = 2)
 ## vcov check
 expect_true(dim(vcov(lme4fit, full = TRUE))[1] == 6L)
 
+## cluster of size 1
+sub1 <- which(sleepstudy$Subject == unique(sleepstudy$Subject)[1])
+ss2 <- sleepstudy[-(sub1[-1]),]
+subfit <- lmer(Reaction ~ Days + (Days|Subject), data=ss2, REML=FALSE)
+
+expect_equal(as.numeric(round(sum(llcont(subfit, level = 1)),4)), 
+             as.numeric(round(logLik(subfit),4)))
+
+expect_equal(class(estfun(subfit))[1], "matrix")
+
+## compare to lavaan
 testwide <- as.data.frame(t(matrix(sleepstudy$Reaction, 10, length(unique(sleepstudy$Subject)))))
 names(testwide) <- paste("d", 1:10, sep = "")
 testwide$Subject <- unique(sleepstudy$Subject)
@@ -142,4 +152,20 @@ lme4res <- c(vcov.lmerMod(Oats.lmer, full = TRUE, ranpar = "var")[7, 7],
 
 expect_true(all(abs(nlmeres-lme4res) < 1))
 
+## check multiple groups score
+nestmod <- lmer(strength ~ 1 + (1|sample) + (1|batch), Pastes, REML = TRUE)
+crossmod <- lmer(diameter ~ 1 + (1|plate) + (1|sample),
+                 Penicillin, REML = TRUE)
+Oats.lmer <- lmer(yield ~ nitro*Variety+(1|Block/Variety), REML=TRUE, data=Oats)
 
+expect_true(sum(dim(estfun.lmerMod(nestmod, level = "cluster"))==c(40,4))==2)
+expect_true(sum(dim(estfun.lmerMod(crossmod, level = "cluster"))==c(30,4))==2)
+expect_true(sum(dim(estfun.lmerMod(Oats.lmer, level = "cluster"))==c(24,9))==2)
+
+
+## Gamma example
+# set.seed(983)
+# dd <- cbind.data.frame(y=rgamma(100,1,2), x1=rnorm(100,5), x2=rnorm(100,3),
+#                        id=rep(1:100,each=10))
+# m0 <- glmer(y ~ x1 + x2 + (1|id), family=Gamma, data=dd)
+# expect_true(abs(sum(llcont.glmerMod(m0)) - logLik(m0)) < .001)

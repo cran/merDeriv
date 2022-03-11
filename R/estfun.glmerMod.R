@@ -8,6 +8,8 @@ estfun.glmerMod <- function(x,...){
   if (length(x@theta) > 1) warning("score sums may be far from 0 due to the fact that nAGQ = 1 is used during model estimation.")
   if (!is.null(x@call$weights)) stop("Models with weights specification is currently not supported.")
   if (length(grep("cbind", x@call$formula))!=0) stop("Models with cbind specification are currently not supported.")
+  if (!(family(x)$family %in% c("binomial", "poisson"))) stop("family has to be binomial or poisson") 
+  
     
   ## extract nAGQ used in model fit, unless overridden by ...
   ddd <- list(...)
@@ -115,10 +117,10 @@ estfun.glmerMod <- function(x,...){
       x.star <- etasds * (sqrt(2)*XW$x) + etamns
 
       out[j,] <- (t(score.prod(S = x.star,
-                  Xi = as.matrix(X[grps==grpnm[j],]),
+                  Xi = X[grps==grpnm[j], , drop = FALSE],
                   Y = Data[grps==grpnm[j]],
                   fe.pred = fe.pred[grps==grpnm[j]],
-                  Zi = as.matrix(Z[grps==grpnm[j],]),
+                  Zi = Z[grps==grpnm[j], , drop = FALSE],
                   re.modes = re.modes[[1]],
                   grp = as.numeric(grpnm[j]), fam = fam,
                   devLambda = devLambda, Lambda = parts$Lambda,
@@ -145,7 +147,7 @@ estfun.glmerMod <- function(x,...){
       C <- re.vars[[1]][,,j]
       if(npd) C <- nearPD(C)$mat
       C <- t(chol(C))
-      etamns <- re.modes[[1]][j,]
+      etamns <- re.modes[[1]][j,,]
 
       x.star <- t(as.matrix(C %*% t(XW$x) + as.numeric(etamns)))
       lav_mvnorm_dmvnorm <- getFromNamespace("lav_mvnorm_dmvnorm", "lavaan")
@@ -155,10 +157,10 @@ estfun.glmerMod <- function(x,...){
             log = FALSE)
 
       out[j,] <- (t(score.prod(S = x.star,
-                               Xi = as.matrix(X[grps==grpnm[j],]),
+                               Xi = X[grps==grpnm[j], , drop = FALSE],
                                Y = Data[grps==grpnm[j]],
                                fe.pred = fe.pred[grps==grpnm[j]],
-                               Zi = as.matrix(Z[grps==grpnm[j],]),
+                               Zi = Z[grps==grpnm[j], , drop = FALSE],
                                re.modes = re.modes[[1]],
                                grp = as.numeric(grpnm[j]), fam = fam, 
                                devLambda = devLambda, Lambda = parts$Lambda,
@@ -235,13 +237,13 @@ score.prod <- function(S, Xi, Y = NULL, fe.pred, Zi, re.modes, grp, fam,
     eta <- if(is.matrix(S)) t(S[i,,drop = FALSE]) else S[i]
     tmpre[grp,] <- eta
     linkyhat <- as.numeric(fe.pred + Zi %*% as.numeric(t(tmpre)))
-    
+
     # use inverse link function on yhat
     yhat <- fam$linkinv(linkyhat)
     Zi_resid <- crossprod(Zi, as.matrix(Y - yhat))
     u  <- iLambda %*% as.vector(t(tmpre))
     iLam_dL <- lapply(devLambda, function(x) x %*% u)
-    
+
     # score matrix with canonical link.
     ranscore <- rep(NA, length(devLambda))
     if(fam$link == do.call(fam$family, list())$link){
@@ -252,9 +254,13 @@ score.prod <- function(S, Xi, Y = NULL, fe.pred, Zi, re.modes, grp, fam,
       }
     } else {
       ## non-canonical link. 
-      ## invD and invV. 
-      invD <- diag(fam$mu.eta(linkyhat))
-      invV <- aphi * diag(1/fam$variance(yhat))
+      ## invD and invV.
+      invD <- fam$mu.eta(linkyhat)
+      invV <- aphi / fam$variance(yhat)
+      if(nrow(Xi) > 1) {
+        invD <- diag(invD)
+        invV <- diag(invV)
+      }
       glmscore <- tcrossprod(tcrossprod(crossprod(Xi, invD),
         invV), t(as.matrix(Y-yhat)))
       Zi_resid <- tcrossprod(tcrossprod(crossprod(Zi, invD),
